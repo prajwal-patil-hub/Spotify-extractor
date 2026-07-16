@@ -7,6 +7,9 @@ environment:
 
 workspace:
   - packages/core_domain
+  - packages/provider_api
+  - packages/provider_spotify
+  - packages/testing_toolkit
   - tools/repo_tools
 
 dev_dependencies:
