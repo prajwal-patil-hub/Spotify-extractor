@@ -1,0 +1,53 @@
+# Bridgetune — Cross-Platform Music Playlist Migration & Synchronization Platform
+
+> **Status: Architecture & Planning Phase** — no implementation has begun. This repository currently
+> contains the complete planning package. Implementation starts only after this package is reviewed
+> and approved.
+
+Bridgetune migrates and synchronizes music libraries **between** streaming platforms. It is not a
+music player and not a local playlist manager — it is an **orchestrator** that creates *real*
+playlists inside the destination platform (e.g., a Spotify playlist becomes a genuine YouTube Music
+playlist in the user's account). The destination platform always owns the result; users never need
+to keep using Bridgetune after a migration.
+
+**MVP scope:** Spotify ↔ YouTube Music, one shared codebase running on Android, iOS, Windows,
+macOS, Linux, and the web.
+
+## Documentation Index
+
+| # | Document | Covers (master-prompt deliverables) |
+|---|----------|-------------------------------------|
+| 01 | [Executive Summary, Vision & Feasibility](docs/01-executive-summary-vision-feasibility.md) | Executive summary · Product vision · Feasibility analysis |
+| 02 | [Provider Capability Matrix & Legal](docs/02-provider-capability-matrix-and-legal.md) | API capability matrix (all 8 providers) · Legal / ToS considerations |
+| 03 | [Technology Stack & Framework Decision](docs/03-technology-stack.md) | Framework comparison (Flutter / RN / KMP / MAUI / Electron / Tauri) · Recommended stack · Database comparison & choice |
+| 04 | [System Architecture](docs/04-architecture.md) | High-level & low-level architecture diagrams · Folder structure · Provider plugin architecture · Capability system design |
+| 05 | [Data Model & Database Schema](docs/05-data-model.md) | Database schema · Local-storage policy |
+| 06 | [Authentication & Security Architecture](docs/06-auth-and-security.md) | Auth flow diagram · OAuth/PKCE design · Token storage · Security architecture |
+| 07 | [Song Matching Engine](docs/07-matching-engine.md) | Matching algorithm design · Confidence scoring · Normalization rules |
+| 08 | [Transfer, Jobs & Synchronization](docs/08-transfer-jobs-sync.md) | Transfer sequence diagram · Job queue design · Sync engine design · Duplicate handling · Offline strategy |
+| 09 | [Error Handling, Observability & Performance](docs/09-errors-observability-performance.md) | Error handling strategy · Observability · Performance optimization plan |
+| 10 | [UI / UX & Design System](docs/10-ui-ux-design-system.md) | Wireframes · Design system specification · Settings & analytics surfaces |
+| 11 | [Development Roadmap](docs/11-roadmap.md) | Phase-by-phase roadmap · Future expansion plan (incl. AI features) |
+| 12 | [Testing Strategy](docs/12-testing-strategy.md) | Unit / integration / E2E / load / security testing · Manual QA checklist |
+| 13 | [CI/CD, Deployment & Maintenance](docs/13-cicd-deployment-maintenance.md) | CI/CD design · Deployment strategy · Maintenance strategy · Git workflow |
+
+## The One-Paragraph Architecture
+
+A **Flutter** application (single codebase, all six targets) built around four pure-Dart core
+packages that know nothing about any specific streaming service: a **provider plugin system**
+(every service implements the same `MusicProvider` interface and declares its `Capabilities`), a
+**matching engine** (ISRC-first, multi-signal fuzzy scoring with confidence tiers and human
+review), a **durable job engine** (checkpointed, resumable background transfers persisted in
+**Drift/SQLite**), and a **sync engine** (snapshot-diff based one-way/two-way sync with
+user-selectable conflict policies). The UI adapts automatically to each provider's declared
+capabilities — no provider-specific logic exists outside its adapter.
+
+## Repository Layout (planned)
+
+See [docs/04-architecture.md](docs/04-architecture.md#folder-structure) for the full monorepo
+folder structure that implementation will follow.
+
+## Contributing & Workflow
+
+Feature branches, small semantic commits, PR review, and phase gates — see
+[docs/13-cicd-deployment-maintenance.md](docs/13-cicd-deployment-maintenance.md#git-workflow).
