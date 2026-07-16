@@ -22,6 +22,7 @@ allow:
 # the plain Dart VM and portable by construction.
 pure_dart:
   - core_domain
+  - data_local
   - provider_api
   - matching_engine
   - job_engine

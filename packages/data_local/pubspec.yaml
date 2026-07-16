@@ -1,0 +1,26 @@
+name: data_local
+description: >-
+  Local persistence: the Drift/SQLite schema (docs/05), repositories with
+  reactive queries, batched snapshot ingestion, and the track-mapping cache.
+  The operational ledger — never the canonical music library.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.12.0
+
+resolution: workspace
+
+dependencies:
+  core_domain: ^0.1.0
+  crypto: ^3.0.6
+  drift: ^2.28.0
+  # 2.x loads the system libsqlite3; 3.x build hooks download binaries,
+  # which sandboxed/proxied CI environments cannot verify.
+  sqlite3: ^2.9.0
+
+dev_dependencies:
+  build_runner: ^2.4.15
+  drift_dev: ^2.28.0
+  lints: ^6.0.0
+  test: ^1.26.0
