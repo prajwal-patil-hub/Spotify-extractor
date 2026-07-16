@@ -33,13 +33,15 @@ jobs:
       - name: Architecture boundary lint
         run: dart run repo_tools:check_boundaries
 
-      - name: Tests — core_domain
-        run: dart test
-        working-directory: packages/core_domain
-
-      - name: Tests — repo_tools
-        run: dart test
-        working-directory: tools/repo_tools
+      - name: Tests — every package with a test suite
+        run: |
+          set -e
+          for pkg in packages/* tools/*; do
+            if [ -d "$pkg/test" ]; then
+              echo "── dart test in $pkg"
+              (cd "$pkg" && dart test)
+            fi
+          done
 
   secrets:
     name: Secret scan
