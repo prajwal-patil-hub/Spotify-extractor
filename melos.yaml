@@ -1,0 +1,30 @@
+name: bridgetune
+
+packages:
+  - packages/**
+  - apps/**
+  - tools/**
+
+command:
+  clean:
+    hooks:
+      post: git clean -fdX packages apps tools
+
+scripts:
+  analyze:
+    description: Static analysis across all packages (infos are fatal).
+    run: dart analyze --fatal-infos .
+
+  format:
+    description: Verify formatting across the workspace.
+    run: dart format --output=none --set-exit-if-changed .
+
+  test:
+    description: Run tests in every package that has a test directory.
+    exec: dart test
+    packageFilters:
+      dirExists: test
+
+  boundaries:
+    description: Enforce the architecture dependency rules (docs/04).
+    run: dart run repo_tools:check_boundaries

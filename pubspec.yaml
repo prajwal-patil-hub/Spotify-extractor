@@ -1,0 +1,13 @@
+name: bridgetune_workspace
+description: Workspace root for Bridgetune — cross-platform music playlist migration & sync.
+publish_to: none
+
+environment:
+  sdk: ^3.12.0
+
+workspace:
+  - packages/core_domain
+  - tools/repo_tools
+
+dev_dependencies:
+  melos: ^7.1.1

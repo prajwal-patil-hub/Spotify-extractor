@@ -1,0 +1,22 @@
+# Dart / Flutter
+.dart_tool/
+build/
+coverage/
+doc/api/
+*.g.dart.tmp
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets — never commit credentials of any kind
+*.env
+*.pem
+*.p12
+*.keystore
+*.jks
