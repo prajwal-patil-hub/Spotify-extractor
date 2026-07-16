@@ -1,0 +1,29 @@
+# Architecture dependency rules (docs/04 §1) — enforced in CI by
+# `dart run repo_tools:check_boundaries`. A violation fails the build.
+#
+# `allow`: for each workspace package (exact name or glob), the internal
+# packages its `dependencies:` may reference and its lib/ code may import.
+# A package with no matching rule is itself a violation — every package
+# must take a conscious position in the dependency graph.
+allow:
+  core_domain: []
+  provider_api: [core_domain]
+  matching_engine: [core_domain, provider_api]
+  job_engine: [core_domain, provider_api]
+  sync_engine: [core_domain, provider_api]
+  data_local: [core_domain]
+  testing_toolkit: [core_domain, provider_api]
+  "provider_*": [core_domain, provider_api]
+  "*_app": ["*"]        # the app shell is the composition root — sees all
+  repo_tools: []
+
+# Packages that must stay pure Dart: any dependency on or import of the
+# Flutter SDK is a violation. This is what keeps the engines testable on
+# the plain Dart VM and portable by construction.
+pure_dart:
+  - core_domain
+  - provider_api
+  - matching_engine
+  - job_engine
+  - sync_engine
+  - repo_tools
