@@ -1,0 +1,20 @@
+name: testing_toolkit
+description: >-
+  Shared test infrastructure: in-memory fakes for auth and token custody, an
+  in-memory reference MusicProvider, and the behavioral contract suite every
+  provider plugin must pass (docs/12 §4).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.12.0
+
+resolution: workspace
+
+dependencies:
+  core_domain: ^0.1.0
+  provider_api: ^0.1.0
+  test: ^1.26.0
+
+dev_dependencies:
+  lints: ^6.0.0
