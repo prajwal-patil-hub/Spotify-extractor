@@ -11,7 +11,9 @@ allow:
   matching_engine: [core_domain, provider_api]
   job_engine: [core_domain, provider_api]
   sync_engine: [core_domain, provider_api]
-  data_local: [core_domain]
+  # data_local implements job_engine's JobStore port (hexagonal: the
+  # adapter depends on the port, never the reverse).
+  data_local: [core_domain, job_engine]
   testing_toolkit: [core_domain, provider_api]
   "provider_*": [core_domain, provider_api]
   "*_app": ["*"]        # the app shell is the composition root — sees all
