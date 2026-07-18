@@ -1,0 +1,25 @@
+name: provider_ytmusic
+description: >-
+  YouTube Music plugin (docs/01 §3.2 hybrid design): official YouTube Data
+  API v3 for playlist CRUD under a persisted unit-budget ledger, plus an
+  explicitly user-consented session path for music-catalog search and liked
+  songs. Capabilities degrade gracefully when the session path is off. All
+  YouTube knowledge lives here and nowhere else.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.12.0
+
+resolution: workspace
+
+dependencies:
+  core_domain: ^0.1.0
+  dio: ^5.7.0
+  meta: ^1.16.0
+  provider_api: ^0.1.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0
+  testing_toolkit: ^0.1.0

@@ -11,6 +11,7 @@ workspace:
   - packages/matching_engine
   - packages/provider_api
   - packages/provider_spotify
+  - packages/provider_ytmusic
   - packages/testing_toolkit
   - tools/repo_tools
 
