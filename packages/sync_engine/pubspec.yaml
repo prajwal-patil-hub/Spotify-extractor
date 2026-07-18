@@ -1,0 +1,22 @@
+name: sync_engine
+description: >-
+  The synchronization engine (docs/08 §5): snapshot 3-way diff, the four
+  conflict policies (mirror source, merge, keep both, manual), plan
+  generation, and the pair orchestrator. Pure Dart.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.12.0
+
+resolution: workspace
+
+dependencies:
+  core_domain: ^0.1.0
+  meta: ^1.16.0
+  provider_api: ^0.1.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0
+  testing_toolkit: ^0.1.0

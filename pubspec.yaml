@@ -13,6 +13,7 @@ workspace:
   - packages/provider_api
   - packages/provider_spotify
   - packages/provider_ytmusic
+  - packages/sync_engine
   - packages/testing_toolkit
   - tools/repo_tools
 
