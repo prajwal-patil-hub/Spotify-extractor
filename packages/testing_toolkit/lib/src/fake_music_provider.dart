@@ -79,19 +79,32 @@ class FakeMusicProvider implements MusicProvider {
   @override
   Future<SearchResult> searchTrack(AccountId account, TrackQuery query) async {
     _require(Capability.catalogSearch);
-    final needle = (query.freeform ?? '${query.title} ${query.artist ?? ''}')
-        .toLowerCase();
-    final hits = _catalog
-        .where(
-          (t) =>
-              (query.isrc != null && t.isrc == query.isrc) ||
-              '${t.title} ${t.primaryArtist?.name ?? ''}'
-                  .toLowerCase()
-                  .contains(needle.trim()),
-        )
-        .take(query.limit)
-        .toList();
-    return SearchResult(tracks: hits);
+    // Token-overlap search, deliberately generous like real providers —
+    // returning near-misses (covers, live versions) is the point: the
+    // matching engine must reject them, never rely on search precision.
+    final needleTokens =
+        (query.freeform ?? '${query.title} ${query.artist ?? ''}')
+            .toLowerCase()
+            .split(RegExp(r'\s+'))
+            .where((t) => t.isNotEmpty)
+            .toSet();
+    final scored = <(int, Track)>[];
+    for (final t in _catalog) {
+      if (query.isrc != null && t.isrc == query.isrc) {
+        scored.add((1000, t));
+        continue;
+      }
+      final hay = '${t.title} ${t.artists.map((a) => a.name).join(' ')}'
+          .toLowerCase()
+          .split(RegExp(r'\s+'))
+          .toSet();
+      final overlap = needleTokens.intersection(hay).length;
+      if (overlap > 0) scored.add((overlap, t));
+    }
+    scored.sort((a, b) => b.$1.compareTo(a.$1));
+    return SearchResult(
+      tracks: [for (final (_, t) in scored.take(query.limit)) t],
+    );
   }
 
   // -- reads ------------------------------------------------------------------

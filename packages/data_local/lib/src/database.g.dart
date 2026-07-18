@@ -1437,9 +1437,8 @@ class $TrackMappingsTable extends TrackMappings
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES track_snapshots (id) ON DELETE CASCADE',
-    ),
+    $customConstraints:
+        'NOT NULL REFERENCES track_snapshots (id) ON DELETE CASCADE',
   );
   static const VerificationMeta _dstProviderIdMeta = const VerificationMeta(
     'dstProviderId',
@@ -2038,9 +2037,8 @@ class $PlaylistSnapshotsTable extends PlaylistSnapshots
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES provider_accounts (id) ON DELETE CASCADE',
-    ),
+    $customConstraints:
+        'NOT NULL REFERENCES provider_accounts (id) ON DELETE CASCADE',
   );
   static const VerificationMeta _providerPlaylistIdMeta =
       const VerificationMeta('providerPlaylistId');
@@ -2777,9 +2775,8 @@ class $PlaylistTrackSnapshotsTable extends PlaylistTrackSnapshots
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES playlist_snapshots (id) ON DELETE CASCADE',
-    ),
+    $customConstraints:
+        'NOT NULL REFERENCES playlist_snapshots (id) ON DELETE CASCADE',
   );
   static const VerificationMeta _trackIdMeta = const VerificationMeta(
     'trackId',
@@ -2791,9 +2788,7 @@ class $PlaylistTrackSnapshotsTable extends PlaylistTrackSnapshots
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES track_snapshots (id)',
-    ),
+    $customConstraints: 'NOT NULL REFERENCES track_snapshots (id)',
   );
   static const VerificationMeta _positionMeta = const VerificationMeta(
     'position',
@@ -3128,9 +3123,7 @@ class $TransferJobsTable extends TransferJobs
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES provider_accounts (id)',
-    ),
+    $customConstraints: 'NOT NULL REFERENCES provider_accounts (id)',
   );
   static const VerificationMeta _dstAccountIdMeta = const VerificationMeta(
     'dstAccountId',
@@ -3142,9 +3135,7 @@ class $TransferJobsTable extends TransferJobs
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES provider_accounts (id)',
-    ),
+    $customConstraints: 'NOT NULL REFERENCES provider_accounts (id)',
   );
   static const VerificationMeta _specJsonMeta = const VerificationMeta(
     'specJson',
@@ -3842,9 +3833,8 @@ class $JobItemsTable extends JobItems with TableInfo<$JobItemsTable, JobItem> {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES transfer_jobs (id) ON DELETE CASCADE',
-    ),
+    $customConstraints:
+        'NOT NULL REFERENCES transfer_jobs (id) ON DELETE CASCADE',
   );
   static const VerificationMeta _seqMeta = const VerificationMeta('seq');
   @override
@@ -3865,9 +3855,7 @@ class $JobItemsTable extends JobItems with TableInfo<$JobItemsTable, JobItem> {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES track_snapshots (id)',
-    ),
+    $customConstraints: 'NOT NULL REFERENCES track_snapshots (id)',
   );
   static const VerificationMeta _mappingIdMeta = const VerificationMeta(
     'mappingId',
@@ -3879,9 +3867,7 @@ class $JobItemsTable extends JobItems with TableInfo<$JobItemsTable, JobItem> {
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES track_mappings (id)',
-    ),
+    $customConstraints: 'NULL REFERENCES track_mappings (id)',
   );
   static const VerificationMeta _stateMeta = const VerificationMeta('state');
   @override
@@ -3891,6 +3877,17 @@ class $JobItemsTable extends JobItems with TableInfo<$JobItemsTable, JobItem> {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
+  );
+  static const VerificationMeta _resolvedDstIdMeta = const VerificationMeta(
+    'resolvedDstId',
+  );
+  @override
+  late final GeneratedColumn<String> resolvedDstId = GeneratedColumn<String>(
+    'resolved_dst_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _attemptCountMeta = const VerificationMeta(
     'attemptCount',
@@ -3934,6 +3931,7 @@ class $JobItemsTable extends JobItems with TableInfo<$JobItemsTable, JobItem> {
     srcTrackId,
     mappingId,
     state,
+    resolvedDstId,
     attemptCount,
     nextRetryAt,
     lastError,
@@ -3996,6 +3994,15 @@ class $JobItemsTable extends JobItems with TableInfo<$JobItemsTable, JobItem> {
     } else if (isInserting) {
       context.missing(_stateMeta);
     }
+    if (data.containsKey('resolved_dst_id')) {
+      context.handle(
+        _resolvedDstIdMeta,
+        resolvedDstId.isAcceptableOrUnknown(
+          data['resolved_dst_id']!,
+          _resolvedDstIdMeta,
+        ),
+      );
+    }
     if (data.containsKey('attempt_count')) {
       context.handle(
         _attemptCountMeta,
@@ -4057,6 +4064,10 @@ class $JobItemsTable extends JobItems with TableInfo<$JobItemsTable, JobItem> {
         DriftSqlType.string,
         data['${effectivePrefix}state'],
       )!,
+      resolvedDstId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}resolved_dst_id'],
+      ),
       attemptCount: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}attempt_count'],
@@ -4085,6 +4096,9 @@ class JobItem extends DataClass implements Insertable<JobItem> {
   final String srcTrackId;
   final String? mappingId;
   final String state;
+
+  /// Destination track id once resolved — engine checkpoint state.
+  final String? resolvedDstId;
   final int attemptCount;
   final DateTime? nextRetryAt;
   final String? lastError;
@@ -4095,6 +4109,7 @@ class JobItem extends DataClass implements Insertable<JobItem> {
     required this.srcTrackId,
     this.mappingId,
     required this.state,
+    this.resolvedDstId,
     required this.attemptCount,
     this.nextRetryAt,
     this.lastError,
@@ -4110,6 +4125,9 @@ class JobItem extends DataClass implements Insertable<JobItem> {
       map['mapping_id'] = Variable<String>(mappingId);
     }
     map['state'] = Variable<String>(state);
+    if (!nullToAbsent || resolvedDstId != null) {
+      map['resolved_dst_id'] = Variable<String>(resolvedDstId);
+    }
     map['attempt_count'] = Variable<int>(attemptCount);
     if (!nullToAbsent || nextRetryAt != null) {
       map['next_retry_at'] = Variable<DateTime>(nextRetryAt);
@@ -4130,6 +4148,9 @@ class JobItem extends DataClass implements Insertable<JobItem> {
           ? const Value.absent()
           : Value(mappingId),
       state: Value(state),
+      resolvedDstId: resolvedDstId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolvedDstId),
       attemptCount: Value(attemptCount),
       nextRetryAt: nextRetryAt == null && nullToAbsent
           ? const Value.absent()
@@ -4152,6 +4173,7 @@ class JobItem extends DataClass implements Insertable<JobItem> {
       srcTrackId: serializer.fromJson<String>(json['srcTrackId']),
       mappingId: serializer.fromJson<String?>(json['mappingId']),
       state: serializer.fromJson<String>(json['state']),
+      resolvedDstId: serializer.fromJson<String?>(json['resolvedDstId']),
       attemptCount: serializer.fromJson<int>(json['attemptCount']),
       nextRetryAt: serializer.fromJson<DateTime?>(json['nextRetryAt']),
       lastError: serializer.fromJson<String?>(json['lastError']),
@@ -4167,6 +4189,7 @@ class JobItem extends DataClass implements Insertable<JobItem> {
       'srcTrackId': serializer.toJson<String>(srcTrackId),
       'mappingId': serializer.toJson<String?>(mappingId),
       'state': serializer.toJson<String>(state),
+      'resolvedDstId': serializer.toJson<String?>(resolvedDstId),
       'attemptCount': serializer.toJson<int>(attemptCount),
       'nextRetryAt': serializer.toJson<DateTime?>(nextRetryAt),
       'lastError': serializer.toJson<String?>(lastError),
@@ -4180,6 +4203,7 @@ class JobItem extends DataClass implements Insertable<JobItem> {
     String? srcTrackId,
     Value<String?> mappingId = const Value.absent(),
     String? state,
+    Value<String?> resolvedDstId = const Value.absent(),
     int? attemptCount,
     Value<DateTime?> nextRetryAt = const Value.absent(),
     Value<String?> lastError = const Value.absent(),
@@ -4190,6 +4214,9 @@ class JobItem extends DataClass implements Insertable<JobItem> {
     srcTrackId: srcTrackId ?? this.srcTrackId,
     mappingId: mappingId.present ? mappingId.value : this.mappingId,
     state: state ?? this.state,
+    resolvedDstId: resolvedDstId.present
+        ? resolvedDstId.value
+        : this.resolvedDstId,
     attemptCount: attemptCount ?? this.attemptCount,
     nextRetryAt: nextRetryAt.present ? nextRetryAt.value : this.nextRetryAt,
     lastError: lastError.present ? lastError.value : this.lastError,
@@ -4204,6 +4231,9 @@ class JobItem extends DataClass implements Insertable<JobItem> {
           : this.srcTrackId,
       mappingId: data.mappingId.present ? data.mappingId.value : this.mappingId,
       state: data.state.present ? data.state.value : this.state,
+      resolvedDstId: data.resolvedDstId.present
+          ? data.resolvedDstId.value
+          : this.resolvedDstId,
       attemptCount: data.attemptCount.present
           ? data.attemptCount.value
           : this.attemptCount,
@@ -4223,6 +4253,7 @@ class JobItem extends DataClass implements Insertable<JobItem> {
           ..write('srcTrackId: $srcTrackId, ')
           ..write('mappingId: $mappingId, ')
           ..write('state: $state, ')
+          ..write('resolvedDstId: $resolvedDstId, ')
           ..write('attemptCount: $attemptCount, ')
           ..write('nextRetryAt: $nextRetryAt, ')
           ..write('lastError: $lastError')
@@ -4238,6 +4269,7 @@ class JobItem extends DataClass implements Insertable<JobItem> {
     srcTrackId,
     mappingId,
     state,
+    resolvedDstId,
     attemptCount,
     nextRetryAt,
     lastError,
@@ -4252,6 +4284,7 @@ class JobItem extends DataClass implements Insertable<JobItem> {
           other.srcTrackId == this.srcTrackId &&
           other.mappingId == this.mappingId &&
           other.state == this.state &&
+          other.resolvedDstId == this.resolvedDstId &&
           other.attemptCount == this.attemptCount &&
           other.nextRetryAt == this.nextRetryAt &&
           other.lastError == this.lastError);
@@ -4264,6 +4297,7 @@ class JobItemsCompanion extends UpdateCompanion<JobItem> {
   final Value<String> srcTrackId;
   final Value<String?> mappingId;
   final Value<String> state;
+  final Value<String?> resolvedDstId;
   final Value<int> attemptCount;
   final Value<DateTime?> nextRetryAt;
   final Value<String?> lastError;
@@ -4275,6 +4309,7 @@ class JobItemsCompanion extends UpdateCompanion<JobItem> {
     this.srcTrackId = const Value.absent(),
     this.mappingId = const Value.absent(),
     this.state = const Value.absent(),
+    this.resolvedDstId = const Value.absent(),
     this.attemptCount = const Value.absent(),
     this.nextRetryAt = const Value.absent(),
     this.lastError = const Value.absent(),
@@ -4287,6 +4322,7 @@ class JobItemsCompanion extends UpdateCompanion<JobItem> {
     required String srcTrackId,
     this.mappingId = const Value.absent(),
     required String state,
+    this.resolvedDstId = const Value.absent(),
     this.attemptCount = const Value.absent(),
     this.nextRetryAt = const Value.absent(),
     this.lastError = const Value.absent(),
@@ -4303,6 +4339,7 @@ class JobItemsCompanion extends UpdateCompanion<JobItem> {
     Expression<String>? srcTrackId,
     Expression<String>? mappingId,
     Expression<String>? state,
+    Expression<String>? resolvedDstId,
     Expression<int>? attemptCount,
     Expression<DateTime>? nextRetryAt,
     Expression<String>? lastError,
@@ -4315,6 +4352,7 @@ class JobItemsCompanion extends UpdateCompanion<JobItem> {
       if (srcTrackId != null) 'src_track_id': srcTrackId,
       if (mappingId != null) 'mapping_id': mappingId,
       if (state != null) 'state': state,
+      if (resolvedDstId != null) 'resolved_dst_id': resolvedDstId,
       if (attemptCount != null) 'attempt_count': attemptCount,
       if (nextRetryAt != null) 'next_retry_at': nextRetryAt,
       if (lastError != null) 'last_error': lastError,
@@ -4329,6 +4367,7 @@ class JobItemsCompanion extends UpdateCompanion<JobItem> {
     Value<String>? srcTrackId,
     Value<String?>? mappingId,
     Value<String>? state,
+    Value<String?>? resolvedDstId,
     Value<int>? attemptCount,
     Value<DateTime?>? nextRetryAt,
     Value<String?>? lastError,
@@ -4341,6 +4380,7 @@ class JobItemsCompanion extends UpdateCompanion<JobItem> {
       srcTrackId: srcTrackId ?? this.srcTrackId,
       mappingId: mappingId ?? this.mappingId,
       state: state ?? this.state,
+      resolvedDstId: resolvedDstId ?? this.resolvedDstId,
       attemptCount: attemptCount ?? this.attemptCount,
       nextRetryAt: nextRetryAt ?? this.nextRetryAt,
       lastError: lastError ?? this.lastError,
@@ -4369,6 +4409,9 @@ class JobItemsCompanion extends UpdateCompanion<JobItem> {
     if (state.present) {
       map['state'] = Variable<String>(state.value);
     }
+    if (resolvedDstId.present) {
+      map['resolved_dst_id'] = Variable<String>(resolvedDstId.value);
+    }
     if (attemptCount.present) {
       map['attempt_count'] = Variable<int>(attemptCount.value);
     }
@@ -4393,6 +4436,7 @@ class JobItemsCompanion extends UpdateCompanion<JobItem> {
           ..write('srcTrackId: $srcTrackId, ')
           ..write('mappingId: $mappingId, ')
           ..write('state: $state, ')
+          ..write('resolvedDstId: $resolvedDstId, ')
           ..write('attemptCount: $attemptCount, ')
           ..write('nextRetryAt: $nextRetryAt, ')
           ..write('lastError: $lastError, ')
@@ -4427,9 +4471,8 @@ class $SyncPairsTable extends SyncPairs
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES playlist_snapshots (id) ON DELETE CASCADE',
-    ),
+    $customConstraints:
+        'NOT NULL REFERENCES playlist_snapshots (id) ON DELETE CASCADE',
   );
   static const VerificationMeta _dstPlaylistIdMeta = const VerificationMeta(
     'dstPlaylistId',
@@ -4441,9 +4484,8 @@ class $SyncPairsTable extends SyncPairs
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES playlist_snapshots (id) ON DELETE CASCADE',
-    ),
+    $customConstraints:
+        'NOT NULL REFERENCES playlist_snapshots (id) ON DELETE CASCADE',
   );
   static const VerificationMeta _modeMeta = const VerificationMeta('mode');
   @override
@@ -5026,9 +5068,7 @@ class $SyncRunsTable extends SyncRuns with TableInfo<$SyncRunsTable, SyncRun> {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES sync_pairs (id) ON DELETE CASCADE',
-    ),
+    $customConstraints: 'NOT NULL REFERENCES sync_pairs (id) ON DELETE CASCADE',
   );
   static const VerificationMeta _triggerMeta = const VerificationMeta(
     'trigger',
@@ -6288,7 +6328,10 @@ final class $$ProviderAccountsTableReferences
   _playlistSnapshotsRefsTable(_$BridgetuneDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.playlistSnapshots,
-        aliasName: 'provider_accounts__id__playlist_snapshots__account_id',
+        aliasName: $_aliasNameGenerator(
+          db.providerAccounts.id,
+          db.playlistSnapshots.accountId,
+        ),
       );
 
   $$PlaylistSnapshotsTableProcessedTableManager get playlistSnapshotsRefs {
@@ -6700,7 +6743,10 @@ final class $$TrackSnapshotsTableReferences
   _trackMappingsRefsTable(_$BridgetuneDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.trackMappings,
-        aliasName: 'track_snapshots__id__track_mappings__src_track_id',
+        aliasName: $_aliasNameGenerator(
+          db.trackSnapshots.id,
+          db.trackMappings.srcTrackId,
+        ),
       );
 
   $$TrackMappingsTableProcessedTableManager get trackMappingsRefs {
@@ -6722,7 +6768,10 @@ final class $$TrackSnapshotsTableReferences
   _playlistTrackSnapshotsRefsTable(_$BridgetuneDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.playlistTrackSnapshots,
-        aliasName: 'track_snapshots__id__playlist_track_snapshots__track_id',
+        aliasName: $_aliasNameGenerator(
+          db.trackSnapshots.id,
+          db.playlistTrackSnapshots.trackId,
+        ),
       );
 
   $$PlaylistTrackSnapshotsTableProcessedTableManager
@@ -6744,7 +6793,10 @@ final class $$TrackSnapshotsTableReferences
     _$BridgetuneDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.jobItems,
-    aliasName: 'track_snapshots__id__job_items__src_track_id',
+    aliasName: $_aliasNameGenerator(
+      db.trackSnapshots.id,
+      db.jobItems.srcTrackId,
+    ),
   );
 
   $$JobItemsTableProcessedTableManager get jobItemsRefs {
@@ -7389,9 +7441,10 @@ final class $$TrackMappingsTableReferences
     super.$_typedResult,
   );
 
-  static $TrackSnapshotsTable _srcTrackIdTable(_$BridgetuneDatabase db) => db
-      .trackSnapshots
-      .createAlias('track_mappings__src_track_id__track_snapshots__id');
+  static $TrackSnapshotsTable _srcTrackIdTable(_$BridgetuneDatabase db) =>
+      db.trackSnapshots.createAlias(
+        $_aliasNameGenerator(db.trackMappings.srcTrackId, db.trackSnapshots.id),
+      );
 
   $$TrackSnapshotsTableProcessedTableManager get srcTrackId {
     final $_column = $_itemColumn<String>('src_track_id')!;
@@ -7411,7 +7464,7 @@ final class $$TrackMappingsTableReferences
     _$BridgetuneDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.jobItems,
-    aliasName: 'track_mappings__id__job_items__mapping_id',
+    aliasName: $_aliasNameGenerator(db.trackMappings.id, db.jobItems.mappingId),
   );
 
   $$JobItemsTableProcessedTableManager get jobItemsRefs {
@@ -7899,9 +7952,13 @@ final class $$PlaylistSnapshotsTableReferences
     super.$_typedResult,
   );
 
-  static $ProviderAccountsTable _accountIdTable(_$BridgetuneDatabase db) => db
-      .providerAccounts
-      .createAlias('playlist_snapshots__account_id__provider_accounts__id');
+  static $ProviderAccountsTable _accountIdTable(_$BridgetuneDatabase db) =>
+      db.providerAccounts.createAlias(
+        $_aliasNameGenerator(
+          db.playlistSnapshots.accountId,
+          db.providerAccounts.id,
+        ),
+      );
 
   $$ProviderAccountsTableProcessedTableManager get accountId {
     final $_column = $_itemColumn<String>('account_id')!;
@@ -7924,8 +7981,10 @@ final class $$PlaylistSnapshotsTableReferences
   _playlistTrackSnapshotsRefsTable(_$BridgetuneDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.playlistTrackSnapshots,
-        aliasName:
-            'playlist_snapshots__id__playlist_track_snapshots__playlist_id',
+        aliasName: $_aliasNameGenerator(
+          db.playlistSnapshots.id,
+          db.playlistTrackSnapshots.playlistId,
+        ),
       );
 
   $$PlaylistTrackSnapshotsTableProcessedTableManager
@@ -8472,7 +8531,10 @@ final class $$PlaylistTrackSnapshotsTableReferences
 
   static $PlaylistSnapshotsTable _playlistIdTable(_$BridgetuneDatabase db) =>
       db.playlistSnapshots.createAlias(
-        'playlist_track_snapshots__playlist_id__playlist_snapshots__id',
+        $_aliasNameGenerator(
+          db.playlistTrackSnapshots.playlistId,
+          db.playlistSnapshots.id,
+        ),
       );
 
   $$PlaylistSnapshotsTableProcessedTableManager get playlistId {
@@ -8489,9 +8551,13 @@ final class $$PlaylistTrackSnapshotsTableReferences
     );
   }
 
-  static $TrackSnapshotsTable _trackIdTable(_$BridgetuneDatabase db) => db
-      .trackSnapshots
-      .createAlias('playlist_track_snapshots__track_id__track_snapshots__id');
+  static $TrackSnapshotsTable _trackIdTable(_$BridgetuneDatabase db) =>
+      db.trackSnapshots.createAlias(
+        $_aliasNameGenerator(
+          db.playlistTrackSnapshots.trackId,
+          db.trackSnapshots.id,
+        ),
+      );
 
   $$TrackSnapshotsTableProcessedTableManager get trackId {
     final $_column = $_itemColumn<String>('track_id')!;
@@ -8892,7 +8958,10 @@ final class $$TransferJobsTableReferences
 
   static $ProviderAccountsTable _srcAccountIdTable(_$BridgetuneDatabase db) =>
       db.providerAccounts.createAlias(
-        'transfer_jobs__src_account_id__provider_accounts__id',
+        $_aliasNameGenerator(
+          db.transferJobs.srcAccountId,
+          db.providerAccounts.id,
+        ),
       );
 
   $$ProviderAccountsTableProcessedTableManager get srcAccountId {
@@ -8911,7 +8980,10 @@ final class $$TransferJobsTableReferences
 
   static $ProviderAccountsTable _dstAccountIdTable(_$BridgetuneDatabase db) =>
       db.providerAccounts.createAlias(
-        'transfer_jobs__dst_account_id__provider_accounts__id',
+        $_aliasNameGenerator(
+          db.transferJobs.dstAccountId,
+          db.providerAccounts.id,
+        ),
       );
 
   $$ProviderAccountsTableProcessedTableManager get dstAccountId {
@@ -8932,7 +9004,7 @@ final class $$TransferJobsTableReferences
     _$BridgetuneDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.jobItems,
-    aliasName: 'transfer_jobs__id__job_items__job_id',
+    aliasName: $_aliasNameGenerator(db.transferJobs.id, db.jobItems.jobId),
   );
 
   $$JobItemsTableProcessedTableManager get jobItemsRefs {
@@ -9517,6 +9589,7 @@ typedef $$JobItemsTableCreateCompanionBuilder =
       required String srcTrackId,
       Value<String?> mappingId,
       required String state,
+      Value<String?> resolvedDstId,
       Value<int> attemptCount,
       Value<DateTime?> nextRetryAt,
       Value<String?> lastError,
@@ -9530,6 +9603,7 @@ typedef $$JobItemsTableUpdateCompanionBuilder =
       Value<String> srcTrackId,
       Value<String?> mappingId,
       Value<String> state,
+      Value<String?> resolvedDstId,
       Value<int> attemptCount,
       Value<DateTime?> nextRetryAt,
       Value<String?> lastError,
@@ -9540,8 +9614,9 @@ final class $$JobItemsTableReferences
     extends BaseReferences<_$BridgetuneDatabase, $JobItemsTable, JobItem> {
   $$JobItemsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $TransferJobsTable _jobIdTable(_$BridgetuneDatabase db) =>
-      db.transferJobs.createAlias('job_items__job_id__transfer_jobs__id');
+  static $TransferJobsTable _jobIdTable(_$BridgetuneDatabase db) => db
+      .transferJobs
+      .createAlias($_aliasNameGenerator(db.jobItems.jobId, db.transferJobs.id));
 
   $$TransferJobsTableProcessedTableManager get jobId {
     final $_column = $_itemColumn<String>('job_id')!;
@@ -9557,9 +9632,10 @@ final class $$JobItemsTableReferences
     );
   }
 
-  static $TrackSnapshotsTable _srcTrackIdTable(_$BridgetuneDatabase db) => db
-      .trackSnapshots
-      .createAlias('job_items__src_track_id__track_snapshots__id');
+  static $TrackSnapshotsTable _srcTrackIdTable(_$BridgetuneDatabase db) =>
+      db.trackSnapshots.createAlias(
+        $_aliasNameGenerator(db.jobItems.srcTrackId, db.trackSnapshots.id),
+      );
 
   $$TrackSnapshotsTableProcessedTableManager get srcTrackId {
     final $_column = $_itemColumn<String>('src_track_id')!;
@@ -9576,7 +9652,9 @@ final class $$JobItemsTableReferences
   }
 
   static $TrackMappingsTable _mappingIdTable(_$BridgetuneDatabase db) =>
-      db.trackMappings.createAlias('job_items__mapping_id__track_mappings__id');
+      db.trackMappings.createAlias(
+        $_aliasNameGenerator(db.jobItems.mappingId, db.trackMappings.id),
+      );
 
   $$TrackMappingsTableProcessedTableManager? get mappingId {
     final $_column = $_itemColumn<String>('mapping_id');
@@ -9614,6 +9692,11 @@ class $$JobItemsTableFilterComposer
 
   ColumnFilters<String> get state => $composableBuilder(
     column: $table.state,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resolvedDstId => $composableBuilder(
+    column: $table.resolvedDstId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9726,6 +9809,11 @@ class $$JobItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get resolvedDstId => $composableBuilder(
+    column: $table.resolvedDstId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get attemptCount => $composableBuilder(
     column: $table.attemptCount,
     builder: (column) => ColumnOrderings(column),
@@ -9828,6 +9916,11 @@ class $$JobItemsTableAnnotationComposer
 
   GeneratedColumn<String> get state =>
       $composableBuilder(column: $table.state, builder: (column) => column);
+
+  GeneratedColumn<String> get resolvedDstId => $composableBuilder(
+    column: $table.resolvedDstId,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get attemptCount => $composableBuilder(
     column: $table.attemptCount,
@@ -9946,6 +10039,7 @@ class $$JobItemsTableTableManager
                 Value<String> srcTrackId = const Value.absent(),
                 Value<String?> mappingId = const Value.absent(),
                 Value<String> state = const Value.absent(),
+                Value<String?> resolvedDstId = const Value.absent(),
                 Value<int> attemptCount = const Value.absent(),
                 Value<DateTime?> nextRetryAt = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
@@ -9957,6 +10051,7 @@ class $$JobItemsTableTableManager
                 srcTrackId: srcTrackId,
                 mappingId: mappingId,
                 state: state,
+                resolvedDstId: resolvedDstId,
                 attemptCount: attemptCount,
                 nextRetryAt: nextRetryAt,
                 lastError: lastError,
@@ -9970,6 +10065,7 @@ class $$JobItemsTableTableManager
                 required String srcTrackId,
                 Value<String?> mappingId = const Value.absent(),
                 required String state,
+                Value<String?> resolvedDstId = const Value.absent(),
                 Value<int> attemptCount = const Value.absent(),
                 Value<DateTime?> nextRetryAt = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
@@ -9981,6 +10077,7 @@ class $$JobItemsTableTableManager
                 srcTrackId: srcTrackId,
                 mappingId: mappingId,
                 state: state,
+                resolvedDstId: resolvedDstId,
                 attemptCount: attemptCount,
                 nextRetryAt: nextRetryAt,
                 lastError: lastError,
@@ -10113,7 +10210,10 @@ final class $$SyncPairsTableReferences
 
   static $PlaylistSnapshotsTable _srcPlaylistIdTable(_$BridgetuneDatabase db) =>
       db.playlistSnapshots.createAlias(
-        'sync_pairs__src_playlist_id__playlist_snapshots__id',
+        $_aliasNameGenerator(
+          db.syncPairs.srcPlaylistId,
+          db.playlistSnapshots.id,
+        ),
       );
 
   $$PlaylistSnapshotsTableProcessedTableManager get srcPlaylistId {
@@ -10132,7 +10232,10 @@ final class $$SyncPairsTableReferences
 
   static $PlaylistSnapshotsTable _dstPlaylistIdTable(_$BridgetuneDatabase db) =>
       db.playlistSnapshots.createAlias(
-        'sync_pairs__dst_playlist_id__playlist_snapshots__id',
+        $_aliasNameGenerator(
+          db.syncPairs.dstPlaylistId,
+          db.playlistSnapshots.id,
+        ),
       );
 
   $$PlaylistSnapshotsTableProcessedTableManager get dstPlaylistId {
@@ -10153,7 +10256,7 @@ final class $$SyncPairsTableReferences
     _$BridgetuneDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.syncRuns,
-    aliasName: 'sync_pairs__id__sync_runs__pair_id',
+    aliasName: $_aliasNameGenerator(db.syncPairs.id, db.syncRuns.pairId),
   );
 
   $$SyncRunsTableProcessedTableManager get syncRunsRefs {
@@ -10704,8 +10807,8 @@ final class $$SyncRunsTableReferences
     extends BaseReferences<_$BridgetuneDatabase, $SyncRunsTable, SyncRun> {
   $$SyncRunsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $SyncPairsTable _pairIdTable(_$BridgetuneDatabase db) =>
-      db.syncPairs.createAlias('sync_runs__pair_id__sync_pairs__id');
+  static $SyncPairsTable _pairIdTable(_$BridgetuneDatabase db) => db.syncPairs
+      .createAlias($_aliasNameGenerator(db.syncRuns.pairId, db.syncPairs.id));
 
   $$SyncPairsTableProcessedTableManager get pairId {
     final $_column = $_itemColumn<String>('pair_id')!;

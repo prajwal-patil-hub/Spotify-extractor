@@ -66,8 +66,9 @@ class TrackSnapshots extends Table {
 class TrackMappings extends Table {
   /// `srcTrackRowId->dstProviderId`.
   TextColumn get id => text()();
-  TextColumn get srcTrackId =>
-      text().references(TrackSnapshots, #id, onDelete: KeyAction.cascade)();
+  TextColumn get srcTrackId => text().customConstraint(
+    'NOT NULL REFERENCES track_snapshots (id) ON DELETE CASCADE',
+  )();
   TextColumn get dstProviderId => text()();
 
   /// Null = confirmed miss (memoized "no match exists", docs/05 §4.2).
@@ -90,8 +91,9 @@ class TrackMappings extends Table {
 class PlaylistSnapshots extends Table {
   /// `accountRowId:providerPlaylistId`.
   TextColumn get id => text()();
-  TextColumn get accountId =>
-      text().references(ProviderAccounts, #id, onDelete: KeyAction.cascade)();
+  TextColumn get accountId => text().customConstraint(
+    'NOT NULL REFERENCES provider_accounts (id) ON DELETE CASCADE',
+  )();
   TextColumn get providerPlaylistId => text()();
   TextColumn get name => text()();
   TextColumn get description => text().nullable()();
@@ -116,9 +118,11 @@ class PlaylistSnapshots extends Table {
 }
 
 class PlaylistTrackSnapshots extends Table {
-  TextColumn get playlistId =>
-      text().references(PlaylistSnapshots, #id, onDelete: KeyAction.cascade)();
-  TextColumn get trackId => text().references(TrackSnapshots, #id)();
+  TextColumn get playlistId => text().customConstraint(
+    'NOT NULL REFERENCES playlist_snapshots (id) ON DELETE CASCADE',
+  )();
+  TextColumn get trackId =>
+      text().customConstraint('NOT NULL REFERENCES track_snapshots (id)')();
   IntColumn get position => integer()();
   DateTimeColumn get addedAt => dateTime().nullable()();
 
@@ -130,8 +134,10 @@ class PlaylistTrackSnapshots extends Table {
 class TransferJobs extends Table {
   TextColumn get id => text()();
   TextColumn get kind => text()();
-  TextColumn get srcAccountId => text().references(ProviderAccounts, #id)();
-  TextColumn get dstAccountId => text().references(ProviderAccounts, #id)();
+  TextColumn get srcAccountId =>
+      text().customConstraint('NOT NULL REFERENCES provider_accounts (id)')();
+  TextColumn get dstAccountId =>
+      text().customConstraint('NOT NULL REFERENCES provider_accounts (id)')();
   TextColumn get specJson => text()();
   TextColumn get state => text()();
   IntColumn get progressDone => integer().withDefault(const Constant(0))();
@@ -149,13 +155,19 @@ class TransferJobs extends Table {
 @TableIndex(name: 'idx_items_retry', columns: {#state, #nextRetryAt})
 class JobItems extends Table {
   TextColumn get id => text()();
-  TextColumn get jobId =>
-      text().references(TransferJobs, #id, onDelete: KeyAction.cascade)();
+  TextColumn get jobId => text().customConstraint(
+    'NOT NULL REFERENCES transfer_jobs (id) ON DELETE CASCADE',
+  )();
   IntColumn get seq => integer()();
-  TextColumn get srcTrackId => text().references(TrackSnapshots, #id)();
-  TextColumn get mappingId =>
-      text().nullable().references(TrackMappings, #id)();
+  TextColumn get srcTrackId =>
+      text().customConstraint('NOT NULL REFERENCES track_snapshots (id)')();
+  TextColumn get mappingId => text().nullable().customConstraint(
+    'NULL REFERENCES track_mappings (id)',
+  )();
   TextColumn get state => text()();
+
+  /// Destination track id once resolved — engine checkpoint state.
+  TextColumn get resolvedDstId => text().nullable()();
   IntColumn get attemptCount => integer().withDefault(const Constant(0))();
   DateTimeColumn get nextRetryAt => dateTime().nullable()();
   TextColumn get lastError => text().nullable()();
@@ -171,10 +183,12 @@ class JobItems extends Table {
 
 class SyncPairs extends Table {
   TextColumn get id => text()();
-  TextColumn get srcPlaylistId =>
-      text().references(PlaylistSnapshots, #id, onDelete: KeyAction.cascade)();
-  TextColumn get dstPlaylistId =>
-      text().references(PlaylistSnapshots, #id, onDelete: KeyAction.cascade)();
+  TextColumn get srcPlaylistId => text().customConstraint(
+    'NOT NULL REFERENCES playlist_snapshots (id) ON DELETE CASCADE',
+  )();
+  TextColumn get dstPlaylistId => text().customConstraint(
+    'NOT NULL REFERENCES playlist_snapshots (id) ON DELETE CASCADE',
+  )();
   TextColumn get mode => text()(); // one_way|two_way
   TextColumn get conflictPolicy => text()();
   TextColumn get scheduleCron => text().nullable()();
@@ -190,8 +204,9 @@ class SyncPairs extends Table {
 
 class SyncRuns extends Table {
   TextColumn get id => text()();
-  TextColumn get pairId =>
-      text().references(SyncPairs, #id, onDelete: KeyAction.cascade)();
+  TextColumn get pairId => text().customConstraint(
+    'NOT NULL REFERENCES sync_pairs (id) ON DELETE CASCADE',
+  )();
   TextColumn get trigger => text()(); // manual|scheduled|change_detected
   TextColumn get state => text()();
   TextColumn get diffJson => text().nullable()();
