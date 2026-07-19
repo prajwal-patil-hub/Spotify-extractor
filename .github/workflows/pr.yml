@@ -17,12 +17,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          channel: stable
+          cache: true
 
       - name: Resolve dependencies
-        run: dart pub get
+        run: flutter pub get
 
       - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed .
@@ -42,6 +43,10 @@ jobs:
               (cd "$pkg" && dart test)
             fi
           done
+
+      - name: Tests — Flutter app
+        run: flutter test
+        working-directory: apps/bridgetune_app
 
   secrets:
     name: Secret scan
