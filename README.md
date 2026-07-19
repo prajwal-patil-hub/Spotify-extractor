@@ -1,8 +1,11 @@
 # Bridgetune — Cross-Platform Music Playlist Migration & Synchronization Platform
 
-> **Status: Architecture & Planning Phase** — no implementation has begun. This repository currently
-> contains the complete planning package. Implementation starts only after this package is reviewed
-> and approved.
+> **Status: MVP implemented, demo-runnable.** Roadmap phases 0–8 are complete: the provider
+> substrate, matching engine, durable job engine, sync engine, and a Flutter app that runs the
+> full pipeline in demo mode all exist and are tested. What remains before real-account use is
+> configuration, not code — OAuth client IDs and per-platform secure storage (see
+> [§ Running it](#running-it) and [docs/14](docs/14-user-guide.md)). The complete planning
+> package that this implementation follows is in [`docs/`](#documentation-index).
 
 Bridgetune migrates and synchronizes music libraries **between** streaming platforms. It is not a
 music player and not a local playlist manager — it is an **orchestrator** that creates *real*
@@ -30,6 +33,10 @@ macOS, Linux, and the web.
 | 11 | [Development Roadmap](docs/11-roadmap.md) | Phase-by-phase roadmap · Future expansion plan (incl. AI features) |
 | 12 | [Testing Strategy](docs/12-testing-strategy.md) | Unit / integration / E2E / load / security testing · Manual QA checklist |
 | 13 | [CI/CD, Deployment & Maintenance](docs/13-cicd-deployment-maintenance.md) | CI/CD design · Deployment strategy · Maintenance strategy · Git workflow |
+| 14 | [User Guide](docs/14-user-guide.md) | Running the app · the screens · demo mode · going to real mode |
+| 15 | [Troubleshooting](docs/15-troubleshooting.md) | Transfer/sync symptoms · YTM unit budget · build & CI symptoms · logs |
+
+See also [CHANGELOG.md](CHANGELOG.md) for the phase-by-phase implementation history.
 
 ## The One-Paragraph Architecture
 
@@ -42,10 +49,37 @@ review), a **durable job engine** (checkpointed, resumable background transfers 
 user-selectable conflict policies). The UI adapts automatically to each provider's declared
 capabilities — no provider-specific logic exists outside its adapter.
 
-## Repository Layout (planned)
+## Running it
+
+The project is a Dart pub-workspace monorepo (melos) with a Flutter app at
+`apps/bridgetune_app`. You need the Flutter SDK 3.44+ (bundles Dart 3.12+).
+
+```bash
+# Run the demo app — the full pipeline over in-memory providers, no credentials needed
+cd apps/bridgetune_app
+flutter pub get
+flutter run                     # choose Chrome, Linux, Android, …
+
+# Run the tests
+flutter pub get                 # from the repo root, resolves the whole workspace
+for pkg in packages/* tools/*; do (cd "$pkg" && dart test); done
+(cd apps/bridgetune_app && flutter test)
+
+# Architecture boundary lint (also enforced in CI)
+dart run repo_tools:check_boundaries
+```
+
+Demo mode boots two in-memory fake providers so every screen and flow is live before any
+OAuth client IDs are configured. Switching to real accounts is a configuration step, not a
+code change — see [docs/14 § Going to real mode](docs/14-user-guide.md#5-going-to-real-mode).
+
+## Repository Layout
 
 See [docs/04-architecture.md](docs/04-architecture.md#folder-structure) for the full monorepo
-folder structure that implementation will follow.
+folder structure. The implemented tree: pure-Dart core packages under `packages/`
+(`core_domain`, `provider_api`, `provider_spotify`, `provider_ytmusic`, `matching_engine`,
+`job_engine`, `sync_engine`, `data_local`, `testing_toolkit`), the boundary-lint tool under
+`tools/repo_tools`, and the Flutter app under `apps/bridgetune_app`.
 
 ## Contributing & Workflow
 
