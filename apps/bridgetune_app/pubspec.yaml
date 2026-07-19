@@ -1,0 +1,37 @@
+name: bridgetune_app
+description: >-
+  Bridgetune — cross-platform music playlist migration & synchronization.
+  The composition root: the ONLY package that sees every provider plugin
+  and wires them into the engines (docs/04 §6).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.12.0
+
+resolution: workspace
+
+dependencies:
+  core_domain: ^0.1.0
+  data_local: ^0.1.0
+  drift: ^2.28.0
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+  job_engine: ^0.1.0
+  matching_engine: ^0.1.0
+  provider_api: ^0.1.0
+  provider_spotify: ^0.1.0
+  provider_ytmusic: ^0.1.0
+  sync_engine: ^0.1.0
+  # Demo mode runs the full pipeline over in-memory fake providers so the
+  # app is usable and testable before real client IDs are configured.
+  testing_toolkit: ^0.1.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

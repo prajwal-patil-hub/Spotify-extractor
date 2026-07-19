@@ -6,6 +6,7 @@ environment:
   sdk: ^3.12.0
 
 workspace:
+  - apps/bridgetune_app
   - packages/core_domain
   - packages/data_local
   - packages/job_engine
