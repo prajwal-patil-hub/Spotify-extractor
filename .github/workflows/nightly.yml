@@ -1,0 +1,54 @@
+name: Nightly
+
+# docs/12 §4 + docs/13 §1: the provider-drift alarm and the slow suites
+# that must not block PRs. Live contract runs activate once sandbox-account
+# secrets exist in the `nightly` GitHub environment.
+on:
+  schedule:
+    - cron: '30 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  full-suite:
+    name: Full test suite (all packages + app)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: All package tests (chaos + torture + golden included)
+        run: |
+          set -e
+          for pkg in packages/* tools/*; do
+            if [ -d "$pkg/test" ]; then
+              echo "── dart test in $pkg"
+              (cd "$pkg" && dart test)
+            fi
+          done
+      - run: flutter test
+        working-directory: apps/bridgetune_app
+
+  dependency-audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Outdated report (informational)
+        run: dart pub outdated || true
+
+  # Placeholder — enable once sandbox accounts are provisioned (docs/12 §4).
+  # live-contract:
+  #   environment: nightly
+  #   steps: run the provider contract suites in live mode against real
+  #   sandbox accounts; a failure here with green fixtures = API drift →
+  #   auto-file an issue tagged provider-drift.
